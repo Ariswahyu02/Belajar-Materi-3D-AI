@@ -4,23 +4,32 @@ using UnityEngine;
 
 public class Waypoints : MonoBehaviour
 {
+    [SerializeField] private bool canLoop = true;
+    [SerializeField] private bool moveForward = true;
     private void OnDrawGizmos()
     {
+        //mengloop semua child dan memberi warna+kube
         foreach (Transform t in transform)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawCube(t.position, new Vector3(1, 1, 1));
+            Gizmos.DrawWireSphere(t.position, 0.5f);
         }
 
+        //mengdrawline untuk slg terhbung dlm antar cube
         Gizmos.color = Color.white;
         for (int i = 0; i < transform.childCount - 1; i++)
         {
             Gizmos.DrawLine(transform.GetChild(i).position, transform.GetChild(i + 1).position);
         }
 
-        Gizmos.DrawLine(transform.GetChild(transform.childCount - 1).position, transform.GetChild(0).position);
+        if (canLoop)
+        {
+
+            Gizmos.DrawLine(transform.GetChild(transform.childCount - 1).position, transform.GetChild(0).position);
+        }
     }
 
+    //mengeset titik awal dr waypoints
     public Transform SetFirstWaypoint()
     {
         return transform.GetChild(0);
@@ -28,14 +37,43 @@ public class Waypoints : MonoBehaviour
 
     public Transform GetNextWaypoints(Transform currentWaypoint)
     {
-        if (currentWaypoint.GetSiblingIndex() < transform.childCount - 1)
+        int currentIndex = currentWaypoint.GetSiblingIndex();
+        int nextIndex = currentIndex;
+
+        if (moveForward)
         {
-            return transform.GetChild(currentWaypoint.GetSiblingIndex() + 1);
+            nextIndex++;
+
+            if (nextIndex == transform.childCount)
+            {
+                if (canLoop)
+                {
+                    nextIndex = 0;
+                }
+                else
+                {
+                    nextIndex--;
+                }
+            }
         }
         else
         {
-            return transform.GetChild(0);
+            nextIndex--;
+
+            if (nextIndex < 0)
+            {
+                if (canLoop)
+                {
+                    nextIndex = transform.childCount - 1;
+                }
+                else
+                {
+                    nextIndex++;
+                }
+            }
         }
+
+        return transform.GetChild(nextIndex);
     }
 
 }
